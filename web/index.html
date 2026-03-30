@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gamekt pro — Painel de Modificações</title>
+  <link rel="icon" href="/icon.png" type="image/png" />
+  <style>
+    :root {
+      --bg: #0d0f14;
+      --card: #161a23;
+      --card2: #1c2130;
+      --border: #2a3045;
+      --accent: #4f8ef7;
+      --accent2: #7c5cfc;
+      --green: #3ecf8e;
+      --yellow: #f7c948;
+      --red: #f75c5c;
+      --text: #e4e8f0;
+      --muted: #8a91a8;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      padding: 0 0 60px;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #1a1f2e 0%, #0d1520 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 40px 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    header img { width: 56px; height: 56px; border-radius: 12px; }
+    .header-text h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.5px; }
+    .header-text h1 span { color: var(--accent); }
+    .header-text p { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+    /* ── Device badge ── */
+    .device-badge {
+      margin-left: auto;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      border-radius: 30px;
+      padding: 8px 18px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .device-badge span { font-size: 1.1rem; }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 24px;
+    }
+
+    /* ── Section titles ── */
+    .section-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      margin: 40px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── Summary cards row ── */
+    .summary-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+    .summary-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+    }
+    .summary-card .big { font-size: 2rem; font-weight: 700; }
+    .summary-card .big.green { color: var(--green); }
+    .summary-card .big.blue  { color: var(--accent); }
+    .summary-card .big.purple { color: var(--accent2); }
+    .summary-card .big.yellow { color: var(--yellow); }
+    .summary-card .label { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+    /* ── Mod cards ── */
+    .mod-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 18px;
+    }
+
+    .mod-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .mod-card:hover { border-color: var(--accent); }
+
+    .mod-card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .mod-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .mod-icon.blue   { background: rgba(79,142,247,0.15); }
+    .mod-icon.green  { background: rgba(62,207,142,0.15); }
+    .mod-icon.purple { background: rgba(124,92,252,0.15); }
+    .mod-icon.yellow { background: rgba(247,201,72,0.15); }
+    .mod-icon.red    { background: rgba(247,92,92,0.12); }
+
+    .mod-card-header .title { font-size: 0.95rem; font-weight: 600; }
+    .mod-card-header .file  { font-size: 0.72rem; color: var(--muted); font-family: monospace; margin-top: 2px; }
+
+    .mod-body { padding: 16px 20px; }
+
+    .change-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .change-item:last-child { border-bottom: none; }
+
+    .pill {
+      font-size: 0.7rem;
+      font-weight: 700;
+      border-radius: 4px;
+      padding: 2px 7px;
+      white-space: nowrap;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .pill.changed { background: rgba(79,142,247,0.2); color: var(--accent); }
+    .pill.added   { background: rgba(62,207,142,0.2); color: var(--green); }
+    .pill.perf    { background: rgba(124,92,252,0.2); color: var(--accent2); }
+
+    .change-content .name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      font-family: monospace;
+    }
+    .change-content .desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 3px;
+      line-height: 1.5;
+    }
+    .change-content .diff {
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+    }
+    .old { color: var(--red); text-decoration: line-through; font-family: monospace; }
+    .arrow { color: var(--muted); }
+    .new  { color: var(--green); font-family: monospace; font-weight: 600; }
+
+    /* ── Full-width card ── */
+    .mod-card.full { grid-column: 1 / -1; }
+
+    .tag-list { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px 20px; }
+    .tag {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-size: 0.78rem;
+      font-family: monospace;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tag .tname { color: var(--accent); }
+    .tag .tval  { color: var(--green); }
+    .tag .tsep  { color: var(--muted); }
+
+    /* ── Dragon canvas background ── */
+    #dragon-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.10;
+    }
+
+    body > * { position: relative; z-index: 1; }
+
+    /* ── Dragon Hero Section ── */
+    .dragon-hero {
+      background: linear-gradient(135deg, #0d1520 0%, #1a0a00 50%, #0d1520 100%);
+      border-bottom: 1px solid #3a1500;
+      padding: 40px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .dragon-hero-title {
+      font-size: 1.1rem;
+      color: #ff6622;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      font-weight: 700;
+      text-shadow: 0 0 20px #ff4400;
+    }
+    .dragon-stage {
+      position: relative;
+      width: 260px;
+      height: 260px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .dragon-glow-ring {
+      position: absolute;
+      width: 260px; height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,80,0,0.25) 0%, transparent 70%);
+      animation: glowPulse 2s ease-in-out infinite;
+    }
+    @keyframes glowPulse {
+      0%, 100% { transform: scale(1);   opacity: 0.7; }
+      50%       { transform: scale(1.15); opacity: 1;   }
+    }
+    .dragon-img {
+      width: 200px; height: 200px;
+      border-radius: 24px;
+      object-fit: cover;
+      position: relative;
+      z-index: 2;
+      animation: dragonFloat 3s ease-in-out infinite;
+      filter: drop-shadow(0 0 24px rgba(255,80,0,0.8));
+    }
+    @keyframes dragonFloat {
+      0%, 100% { transform: translateY(0) rotate(-1deg) scale(1);   }
+      25%       { transform: translateY(-10px) rotate(1deg) scale(1.03); }
+      50%       { transform: translateY(-5px) rotate(0deg) scale(1.02); }
+      75%       { transform: translateY(-12px) rotate(-1.5deg) scale(1.04); }
+    }
+    #fire-canvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 3;
+      pointer-events: none;
+    }
+    .dragon-desc {
+      color: #ff9955;
+      font-size: 0.9rem;
+      text-align: center;
+      max-width: 360px;
+      line-height: 1.6;
+      text-shadow: 0 0 10px rgba(255,80,0,0.4);
+    }
+
+    /* ── URL Box ── */
+    .url-box {
+      background: linear-gradient(135deg, rgba(255,80,0,0.12), rgba(79,142,247,0.08));
+      border: 2px solid #ff4400;
+      border-radius: 14px;
+      padding: 24px 28px;
+      max-width: 820px;
+      margin: 0 auto 0;
+      text-align: center;
+    }
+    .url-box h2 {
+      font-size: 1rem;
+      color: #ff6622;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .url-display {
+      background: #0a0d14;
+      border: 1px solid #ff4400;
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-family: monospace;
+      font-size: 0.88rem;
+      color: #66ccff;
+      word-break: break-all;
+      margin-bottom: 14px;
+      user-select: all;
+    }
+    .copy-btn {
+      background: linear-gradient(135deg, #ff4400, #ff8800);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 28px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .copy-btn:hover  { opacity: 0.88; }
+    .copy-btn:active { transform: scale(0.97); }
+    .copy-note {
+      margin-top: 12px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── APK Section ── */
+    .apk-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 18px;
+    }
+    .apk-card {
+      background: linear-gradient(135deg, rgba(79,142,247,0.08), rgba(124,92,252,0.08));
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 22px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .apk-card:hover { border-color: var(--accent2); transform: translateY(-2px); }
+    .apk-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+    .apk-card p  { font-size: 0.82rem; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
+    .apk-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      padding: 9px 20px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      transition: opacity 0.2s;
+    }
+    .apk-btn:hover { opacity: 0.85; }
+    .apk-note {
+      background: rgba(247,201,72,0.08);
+      border: 1px solid rgba(247,201,72,0.3);
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-size: 0.82rem;
+      color: var(--yellow);
+      line-height: 1.6;
+      margin-top: 18px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-top: 60px;
+    }
+    footer strong { color: var(--text); }
+  </style>
+</head>
+<body>
+
+<canvas id="dragon-canvas"></canvas>
+
+<header>
+  <img src="/icon.png" alt="Gamekt pro" onerror="this.style.display='none'" />
+  <div class="header-text">
+    <h1>Gamekt<span> pro</span></h1>
+    <p>Painel de Modificações e Otimizações</p>
+  </div>
+  <div class="device-badge">
+    <span>📱</span> Moto G35 · 4 GB RAM
+  </div>
+</header>
+
+<!-- Dragon Hero -->
+<div class="dragon-hero">
+  <div class="dragon-hero-title">🔥 Gamekt pro · Mascote · Dragão do Fogo 🔥</div>
+  <div class="dragon-stage">
+    <div class="dragon-glow-ring"></div>
+    <img class="dragon-img" src="/icon.png" alt="Dragão Gamekt pro" />
+    <canvas id="fire-canvas"></canvas>
+  </div>
+  <div class="dragon-desc">
+    Dragão guardião do Gamekt pro — bate as asas, cospe fogo e segura o controle para você jogar! 🎮🐉
+  </div>
+</div>
+
+<!-- Build APK CTA -->
+<div style="padding: 32px 24px 0; max-width: 1100px; margin: 0 auto;">
+  <div class="url-box" style="border-color:#ff4400;">
+    <h2>🚀 Enviar para GitHub e Gerar APK</h2>
+    <p style="color:#ff9955;font-size:0.95rem;margin-bottom:22px;line-height:1.7;">
+      Cole seu token do GitHub e o sistema cria o repositório e envia o código do Gamekt pro automaticamente. Sem PC, sem terminal, sem complicação.
+    </p>
+    <a class="apk-btn" style="background:linear-gradient(135deg,#ff4400,#ff8800);font-size:1.1rem;padding:18px 36px;display:inline-block;margin-bottom:16px;"
+       href="/push.html">
+      🚀 Criar Repositório e Enviar Código
+    </a>
+    <div class="copy-note" style="color:var(--muted);font-size:0.82rem;">
+      Não tem conta no GitHub? <a href="https://github.com/signup" target="_blank" style="color:#4f8ef7;">Crie grátis aqui</a> — só precisa de e-mail.
+    </div>
+  </div>
+</div>
+
+<main>
+
+  <!-- Summary -->
+  <div class="section-title">Resumo das modificações</div>
+  <div class="summary-row">
+    <div class="summary-card">
+      <div class="big green">8</div>
+      <div class="label">Arquivos modificados</div>
+    </div>
+    <div class="summary-card">
+      <div class="big blue">↓50%</div>
+      <div class="label">Memória de vídeo</div>
+    </div>
+    <div class="summary-card">
+      <div class="big purple">↑</div>
+      <div class="label">Preset Box64 / FEXCore</div>
+    </div>
+    <div class="summary-card">
+      <div class="big yellow">✓</div>
+      <div class="label">Async shader cache</div>
+    </div>
+    <div class="summary-card">
+      <div class="big green">7</div>
+      <div class="label">Flags JIT globais</div>
+    </div>
+  </div>
+
+  <!-- Memory -->
+  <div class="section-title">Memória e RAM</div>
+  <div class="mod-grid">
+
+    <div class="mod-card">
+      <div class="mod-card-header">
+        <div class="mod-icon blue">🧠</div>
+        <div>
+          <div class="title">Memória de Vídeo (DXVK)</div>
+          <div class="file">Container.java · PrefManager.kt</div>
+        </div>
+      </div>
+      <div class="mod-body">
+        <div class="change-item">
+          <div class="pill changed">CHANGED</div>
+          <div class="change-content">
+            <div class="name">videoMemorySize</div>
+            <div class="desc">Memória de vídeo alocada pelo DXVK. Reduzida para não ultrapassar o limite de 4 GB do dispositivo.</div>
+            <div class="diff"><span class="old">2048 MB</span><span class="arrow">→</span><span class="new">1024 MB</span></div>
+          </div>
+        </div>
+        <div class="change-item">
+          <div class="pill changed">CHANGED</div>
+          <div class="change-content">
+            <div class="name">maxDeviceMemory</div>
+            <div class="desc">Limite máximo de memória do dispositivo que o DXVK pode usar.</div>
+            <div class="diff"><span class="old">0 (ilimitado)</span><span class="arrow">→</span><span class="new">1024 MB</span></div>
+          </div>
+        </div>
+        <div class="change-item">
+          <div class="pill changed">CHANGED</div>
+          <div class="change-content">
+            <div class="name">MESA_SHADER_CACHE_MAX_SIZE</div>
+            <div class="desc">Tamanho máximo do cache de shaders da Mesa. Reduzido para economizar RAM do sistema.</div>
+            <div class="diff"><span class="old">512 MB</span><span class="arrow">→</span><span class="new">256 MB</span></div>
+          </div>
+        </div>
+        <div class="change-item">
+          <div class="pill changed">CHANGED</div>
+          <div class="change-content">
+            <div class="name">JVM Heap (Gradle)</div>
+            <div class="desc">Memória da JVM usada no processo de build. Adequada para máquinas com ≤ 8 GB.</div>
+            <div class="diff"><span class="old">8192 MB</span><span class="arrow">→</span><span class="new">4096 MB</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mod-card">
+      <div class="mod-card-header">
+        <div class="mod-icon green">⚙️</div>
+        <div>
+          <div class="title">Variáveis de Ambiente Wine/Mesa</div>
+          <div class="file">Container.java — DEFAULT_ENV_VARS</div>
+        </div>
+      </div>
+      <div class="mod-body">
+        <div class="change-item">
+          <div class="pill added">ADDED</div>
+          <div class="change-content">
+            <div class="name">WINEDEBUG=-all</div>
+            <div class="desc">Desativa todos os logs de debug do Wine. Libera CPU e RAM para o jogo.</div>
+          </div>
+        </div>
+        <div class="change-item">
+          <div class="pill added">ADDED</div>
+          <div class="change-content">
+            <div class="name">STAGING_SHARED_MEMORY=1</div>
+            <div class="desc">Melhora o tratamento de memória compartilhada em dispositivos com pouca RAM.</div>
+          </div>
+        </div>
+        <div class="change-item">
+          <div class="pill added">ADDED</div>
+          <div class="change-content">
+            <div class="name">DXVK_ASYNC=1</div>
+            <div class="desc">Ativa compilação assíncrona de shaders explicitamente — elimina engasgos durante o jogo.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Performance -->
+  <div class="section-title">Performance para Jogos Pesados</div>
+  <div class="mod-grid">
+
+    <div class="mod-card">
+      <div class="mod-card-header">
+        <div class="mod-icon purple">🚀</div>
+        <div>
+          <div class="title">Preset Box86 / Box64</div>
+          <div class="file">PrefManager.kt</div>
+        </div>
+      </div>
+      <div class="mod-body">
+        <div class="change-item">
+          <div class="pill changed">CHANGED</div>
+          <div class="change-content">
+            <div class="name">box86Preset / box64Preset</div>
+            <div class="desc">Preset do compilador JIT de emulação x86. PERFORMANCE ativa blocos maiores, lookahead 512, ponto flutuante rápido e menor overhead de memória.</div>
+            <div class="diff"><span class="old">COMPATIBILITY</span><span class="arrow">→</span><span class="new">PERFORMANCE</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mod-card">
+      <div class="mod-card-header">
+        <div class="mod-icon purple">⚡</div>
+        <div>
+          <div class="title">Preset FEXCore</div>
+          <div class="file">PrefManager.kt</div>
+        </div>
+      </div>
+      <div class="mod-body">
+        <div class="change-item">
+          <div class="pill changed">CHANGED</div>
+          <div class="change-content">
+            <div class="name">fexcorePreset</div>
+            <div class="desc">Preset do emulador FEXCore (x86 em ARM64). PERFORMANCE desativa barreiras de memória desnecessárias (TSO), dando um ganho significativo de velocidade.</div>
+            <div class="diff"><span class="old">INTERMEDIATE</span><span class="arrow">→</span><span class="new">PERFORMANCE</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mod-card">
+      <div class="mod-card-header">
+        <div class="mod-icon yellow">💾</div>
+        <div>
+          <div class="title">Cache de Shaders Assíncronos</div>
+          <div class="file">DefaultVersion.java</div>
+        </div>
+      </div>
+      <div class="mod-body">
+        <div class="change-item">
+          <div class="pill changed">CHANGED</div>
+          <div class="change-content">
+            <div class="name">ASYNC_CACHE</div>
+            <div class="desc">Salva em disco os shaders compilados de forma assíncrona. Na segunda vez que o jogo abre, os shaders já estão prontos — elimina os engasgos e travamentos recorrentes.</div>
+            <div class="diff"><span class="old">"0" (desativado)</span><span class="arrow">→</span><span class="new">"1" (ativado)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Box64rc -->
+  <div class="section-title">Configurações Globais Box64 (todos os jogos)</div>
+
+  <div class="mod-card full">
+    <div class="mod-card-header">
+      <div class="mod-icon blue">🎮</div>
+      <div>
+        <div class="title">Seção [*] adicionada — aplica a todos os jogos automaticamente</div>
+        <div class="file">default.box64rc · lightsteam.box64rc · ultralightsteam.box64rc</div>
+      </div>
+    </div>
+    <div class="tag-list">
+      <div class="tag">
+        <span class="tname">BIGBLOCK</span><span class="tsep">=</span><span class="tval">3</span>
+        <span style="color:var(--muted);font-size:0.7rem;margin-left:4px">— blocos JIT maiores = menos recompilação = + FPS</span>
+      </div>
+      <div class="tag">
+        <span class="tname">CALLRET</span><span class="tsep">=</span><span class="tval">1</span>
+        <span style="color:var(--muted);font-size:0.7rem;margin-left:4px">— chamadas de função otimizadas</span>
+      </div>
+      <div class="tag">
+        <span class="tname">FORWARD</span><span class="tsep">=</span><span class="tval">512</span>
+        <span style="color:var(--muted);font-size:0.7rem;margin-left:4px">— lookahead maior para o compilador JIT</span>
+      </div>
+      <div class="tag">
+        <span class="tname">SAFEFLAGS</span><span class="tsep">=</span><span class="tval">1</span>
+        <span style="color:var(--muted);font-size:0.7rem;margin-left:4px">— balanço entre segurança e velocidade</span>
+      </div>
+      <div class="tag">
+        <span class="tname">FASTNAN</span><span class="tsep">=</span><span class="tval">1</span>
+        <span style="color:var(--muted);font-size:0.7rem;margin-left:4px">— operações NaN mais rápidas</span>
+      </div>
+      <div class="tag">
+        <span class="tname">FASTROUND</span><span class="tsep">=</span><span class="tval">1</span>
+        <span style="color:var(--muted);font-size:0.7rem;margin-left:4px">— arredondamento de ponto flutuante acelerado</span>
+      </div>
+      <div class="tag">
+        <span class="tname">STRONGMEM</span><span class="tsep">=</span><span class="tval">0</span>
+        <span style="color:var(--muted);font-size:0.7rem;margin-left:4px">— remove ordenação de memória excessiva</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auto per-game optimizer -->
+  <div class="section-title">Otimizador automático por jogo</div>
+
+  <div class="mod-card full">
+    <div class="mod-card-header">
+      <div class="mod-icon purple">🤖</div>
+      <div>
+        <div class="title">AutoGameOptimizer — aplica configurações ideais automaticamente ao lançar cada jogo</div>
+        <div class="file">AutoGameOptimizer.kt · GameFixesRegistry.kt · default.box64rc</div>
+      </div>
+    </div>
+    <div style="padding:0 20px 4px;color:var(--muted);font-size:0.8rem;border-bottom:1px solid var(--border);">
+      Quando você abre um jogo, o app detecta automaticamente qual é e aplica as melhores configurações de resolução, FPS, preset JIT e memória DXVK — sem você precisar mexer em nada.
+    </div>
+    <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+      <thead>
+        <tr style="background:var(--card2);color:var(--muted);font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;">
+          <th style="padding:10px 16px;text-align:left;">Jogo</th>
+          <th style="padding:10px 12px;text-align:center;">Peso</th>
+          <th style="padding:10px 12px;text-align:center;">Resolução</th>
+          <th style="padding:10px 12px;text-align:center;">FPS</th>
+          <th style="padding:10px 12px;text-align:center;">Preset JIT</th>
+          <th style="padding:10px 12px;text-align:left;">Ajustes extras</th>
+        </tr>
+      </thead>
+      <tbody id="game-table">
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- Tips -->
+  <div class="section-title">Dicas de uso no Moto G35</div>
+  <div class="mod-grid">
+    <div class="mod-card">
+      <div class="mod-card-header">
+        <div class="mod-icon green">💡</div>
+        <div><div class="title">Resolução recomendada</div></div>
+      </div>
+      <div class="mod-body">
+        <div class="change-item">
+          <div class="change-content">
+            <div class="desc">A tela do Moto G35 é <strong>1600×720</strong>. O app usa <strong>1280×720</strong> como padrão — ótimo balanço entre qualidade e performance. Para jogos muito pesados, você pode baixar para <strong>960×540</strong> nas configurações do container.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-header">
+        <div class="mod-icon yellow">⚠️</div>
+        <div><div class="title">Se um jogo travar</div></div>
+      </div>
+      <div class="mod-body">
+        <div class="change-item">
+          <div class="change-content">
+            <div class="desc">O preset <strong>PERFORMANCE</strong> é mais agressivo. Se um jogo específico ficar instável ou travar, acesse as configurações daquele container e mude o preset Box64/FEXCore para <strong>COMPATIBILITY</strong> apenas para aquele jogo.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-header">
+        <div class="mod-icon blue">🔄</div>
+        <div><div class="title">Compilação de shaders</div></div>
+      </div>
+      <div class="mod-body">
+        <div class="change-item">
+          <div class="change-content">
+            <div class="desc">Na <strong>primeira vez</strong> que abrir um jogo, pode haver alguns engasgos enquanto os shaders são compilados. Isso é normal. A partir da <strong>segunda vez</strong>, os shaders já estarão em cache e o jogo rodará muito mais suave.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APK Build Guide -->
+  <div class="section-title">Como Gerar o APK — Guia Rápido</div>
+
+  <!-- Step by step guide -->
+  <div class="mod-card full" style="border-color:#ff4400;">
+    <div class="mod-card-header" style="background:linear-gradient(135deg,rgba(255,68,0,0.15),transparent);">
+      <div class="mod-icon red">🏗️</div>
+      <div>
+        <div class="title" style="color:#ff6622;font-size:1rem;">Build automático — tudo pronto, só conectar o GitHub</div>
+        <div class="file">O workflow de build já está configurado no projeto</div>
+      </div>
+    </div>
+    <div class="mod-body">
+
+      <div class="change-item">
+        <div class="pill changed" style="background:rgba(255,68,0,0.2);color:#ff6622;font-size:0.9rem;padding:6px 12px;font-size:1rem;">① REPLIT</div>
+        <div class="change-content">
+          <div class="name" style="font-size:1rem;">Conecte o GitHub aqui no Replit (uma vez só)</div>
+          <div class="desc" style="font-size:0.88rem;">
+            Na barra lateral esquerda do Replit, procure o ícone de <strong>ramificação</strong> (parece dois galhos) ou clique nos três pontinhos e procure <strong>"Version Control"</strong> ou <strong>"Connect to GitHub"</strong>.<br><br>
+            Faça login com sua conta GitHub → clique em <strong>"Create a GitHub repository"</strong> e confirme. O Replit vai enviar todo o código do Gamekt pro para o seu GitHub automaticamente. <strong>Não precisa mexer em arquivo nenhum.</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="change-item" style="border-bottom:none;">
+        <div class="pill added" style="font-size:0.9rem;padding:6px 12px;font-size:1rem;">② GITHUB</div>
+        <div class="change-content">
+          <div class="name" style="font-size:1rem;">Rode o build e baixe o APK</div>
+          <div class="desc" style="font-size:0.88rem;">
+            Abra o repositório criado no seu GitHub → clique na aba <strong>Actions</strong> → clique em <strong>"Build Gamekt pro APK"</strong> → clique em <strong>"Run workflow"</strong> (botão verde) → aguarde ~15 minutos.<br><br>
+            Quando aparecer o ✅ verde, clique no build → role até <strong>Artifacts</strong> → clique em <strong>"Gamekt-pro-debug"</strong> → baixe o APK → instale no Moto G35!
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="apk-note">
+    ✅ <strong>Resumo:</strong> Conecta o GitHub no Replit (uma vez) → vai no GitHub → clica Run workflow → espera 15 min → baixa o APK. Pronto.<br><br>
+    Não tem conta GitHub? <a href="https://github.com/signup" target="_blank" style="color:#f7c948;">Crie grátis aqui</a> — só precisa de e-mail, funciona pelo celular.<br><br>
+    ⚠️ <strong>Para instalar no Moto G35:</strong> Após baixar o APK, vá em <strong>Configurações → Aplicativos → Acesso especial → Instalar apps desconhecidos</strong> → habilite o navegador → abra o APK e instale.
+  </div>
+
+</main>
+
+<footer>
+  Modificações para <strong>Gamekt pro</strong> · Moto G35 · 4 GB RAM · Snapdragon 6 Gen 3 + Adreno 710
+</footer>
+
+<script>
+const WEIGHT_LABEL = { LIGHT: '🟢 Leve', MEDIUM: '🟡 Médio', HEAVY: '🟠 Pesado', EXTREME: '🔴 Extremo' };
+const WEIGHT_COLOR = { LIGHT: '#3ecf8e', MEDIUM: '#f7c948', HEAVY: '#f7874a', EXTREME: '#f75c5c' };
+
+const PROFILES = [
+  // Light
+  { name:'Half-Life',            appId:'70',      weight:'LIGHT',   screen:null,        fps:null, preset:'PERFORMANCE', extras:'' },
+  { name:'Half-Life 2',          appId:'220',     weight:'LIGHT',   screen:null,        fps:null, preset:'PERFORMANCE', extras:'' },
+  { name:'Counter-Strike: Source', appId:'240',   weight:'LIGHT',   screen:null,        fps:null, preset:'PERFORMANCE', extras:'' },
+  { name:'Portal',               appId:'400',     weight:'LIGHT',   screen:null,        fps:null, preset:'PERFORMANCE', extras:'' },
+  { name:'Portal 2',             appId:'620',     weight:'LIGHT',   screen:null,        fps:null, preset:'PERFORMANCE', extras:'' },
+  { name:"Garry's Mod",          appId:'4000',    weight:'LIGHT',   screen:null,        fps:null, preset:'PERFORMANCE', extras:'' },
+  // Medium
+  { name:'Left 4 Dead 2',        appId:'550',     weight:'MEDIUM',  screen:null,        fps:60,   preset:'PERFORMANCE', extras:'DXVK_FRAME_RATE=60' },
+  { name:'Dota 2',               appId:'570',     weight:'MEDIUM',  screen:null,        fps:60,   preset:'PERFORMANCE', extras:'DXVK_FRAME_RATE=60' },
+  { name:'CS:GO / CS2',          appId:'730',     weight:'MEDIUM',  screen:null,        fps:60,   preset:'PERFORMANCE', extras:'DXVK_FRAME_RATE=60' },
+  { name:'Civilization V',       appId:'8930',    weight:'MEDIUM',  screen:null,        fps:null, preset:'PERFORMANCE', extras:'' },
+  { name:'Borderlands 2',        appId:'49520',   weight:'MEDIUM',  screen:null,        fps:null, preset:'PERFORMANCE', extras:'' },
+  // Heavy
+  { name:'Arma 3',               appId:'107410',  weight:'HEAVY',   screen:'960×540',   fps:30,   preset:'PERFORMANCE', extras:'DXVK_FRAME_RATE=30, framerate=30' },
+  { name:'Grand Theft Auto V',   appId:'271590',  weight:'HEAVY',   screen:'960×540',   fps:30,   preset:'PERFORMANCE', extras:'DXVK_FRAME_RATE=30, vram=1024 MB' },
+  { name:'The Witcher 3',        appId:'292030',  weight:'HEAVY',   screen:'960×540',   fps:30,   preset:'PERFORMANCE', extras:'DXVK_FRAME_RATE=30, vram=1024 MB' },
+  { name:'Dark Souls III',       appId:'374320',  weight:'HEAVY',   screen:'960×540',   fps:30,   preset:'PERFORMANCE', extras:'DXVK_FRAME_RATE=30' },
+  { name:'DOOM (2016)',          appId:'379720',  weight:'HEAVY',   screen:'960×540',   fps:30,   preset:'PERFORMANCE', extras:'ZINK_CONTEXT_THREADED=1' },
+  { name:'Nioh: Complete Ed.',   appId:'524220',  weight:'HEAVY',   screen:'960×540',   fps:30,   preset:'PERFORMANCE', extras:'DXVK_FRAME_RATE=30' },
+  { name:'PUBG: Battlegrounds',  appId:'578080',  weight:'HEAVY',   screen:'960×540',   fps:30,   preset:'PERFORMANCE', extras:'DXVK_FRAME_RATE=30, STRONGMEM=1' },
+  { name:'Monster Hunter: World',appId:'582010',  weight:'HEAVY',   screen:'960×540',   fps:30,   preset:'PERFORMANCE', extras:'DXVK_FRAME_RATE=30, vram=1024 MB' },
+  { name:'Sekiro',               appId:'814380',  weight:'HEAVY',   screen:'960×540',   fps:30,   preset:'PERFORMANCE', extras:'DXVK_FRAME_RATE=30' },
+  // Extreme
+  { name:'Cyberpunk 2077',       appId:'1091500', weight:'EXTREME', screen:'800×450',   fps:30,   preset:'PERFORMANCE', extras:'DXVK_FRAME_RATE=30, vram=1024 MB, VKD3D_FL=12_0' },
+  { name:'Red Dead Redemption 2',appId:'1174180', weight:'EXTREME', screen:'800×450',   fps:30,   preset:'PERFORMANCE', extras:'DXVK_FRAME_RATE=30, vram=1024 MB' },
+  { name:'Elden Ring',           appId:'1245620', weight:'EXTREME', screen:'960×540',   fps:30,   preset:'PERFORMANCE', extras:'DXVK_FRAME_RATE=30, vram=1024 MB, STRONGMEM=1' },
+  { name:'Forza Horizon 4',      appId:'1293830', weight:'EXTREME', screen:'800×450',   fps:30,   preset:'PERFORMANCE', extras:'DXVK_FRAME_RATE=30, VKD3D_FL=12_0' },
+  { name:'Forza Horizon 5',      appId:'1551360', weight:'EXTREME', screen:'800×450',   fps:30,   preset:'PERFORMANCE', extras:'DXVK_FRAME_RATE=30, VKD3D_FL=12_0' },
+  { name:'Battlefield 2042',     appId:'1517290', weight:'EXTREME', screen:'960×540',   fps:30,   preset:'PERFORMANCE', extras:'DXVK_FRAME_RATE=30, vram=1024 MB' },
+  { name:"Baldur's Gate 3",      appId:'1086940', weight:'EXTREME', screen:'960×540',   fps:30,   preset:'PERFORMANCE', extras:'DXVK_FRAME_RATE=30, vram=1024 MB' },
+  { name:'God of War',           appId:'1716740', weight:'EXTREME', screen:'800×450',   fps:30,   preset:'PERFORMANCE', extras:'DXVK_FRAME_RATE=30, VKD3D_FL=12_0' },
+  { name:'CoD: Modern Warfare II',appId:'1259420',weight:'EXTREME', screen:'800×450',   fps:30,   preset:'PERFORMANCE', extras:'DXVK_FRAME_RATE=30, vram=1024 MB' },
+];
+
+const tbody = document.getElementById('game-table');
+const rowStyle = 'border-bottom:1px solid var(--border);transition:background .15s;';
+PROFILES.forEach((g, i) => {
+  const tr = document.createElement('tr');
+  tr.style = rowStyle + (i % 2 === 0 ? 'background:transparent;' : 'background:rgba(255,255,255,.02);');
+  tr.onmouseenter = () => tr.style.background = 'rgba(79,142,247,.07)';
+  tr.onmouseleave = () => tr.style.background = (i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,.02)');
+  const wColor = WEIGHT_COLOR[g.weight];
+  const wLabel = WEIGHT_LABEL[g.weight];
+  const screen = g.screen ? `<span style="color:var(--accent);font-family:monospace">${g.screen}</span>` : `<span style="color:var(--muted)">padrão</span>`;
+  const fps    = g.fps    ? `<span style="color:var(--green);font-family:monospace">${g.fps}</span>` : `<span style="color:var(--muted)">60</span>`;
+  const extras = g.extras ? `<span style="color:var(--muted);font-size:0.75rem">${g.extras}</span>` : `<span style="color:var(--muted);opacity:.4">—</span>`;
+  tr.innerHTML = `
+    <td style="padding:9px 16px;color:var(--text);">${g.name} <span style="color:var(--muted);font-size:0.72rem">#${g.appId}</span></td>
+    <td style="padding:9px 12px;text-align:center;white-space:nowrap;"><span style="color:${wColor};font-size:0.77rem">${wLabel}</span></td>
+    <td style="padding:9px 12px;text-align:center;">${screen}</td>
+    <td style="padding:9px 12px;text-align:center;">${fps}</td>
+    <td style="padding:9px 12px;text-align:center;"><span style="background:rgba(79,142,247,.15);color:var(--accent);padding:2px 8px;border-radius:4px;font-size:0.74rem">${g.preset}</span></td>
+    <td style="padding:9px 12px;">${extras}</td>
+  `;
+  tbody.appendChild(tr);
+});
+</script>
+
+<script>
+function copyURL() {
+  const url = document.getElementById('app-url').innerText.trim();
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✅ Copiado!';
+    setTimeout(() => btn.textContent = '📋 Copiar URL', 2000);
+  });
+}
+
+(function fireDragonHero() {
+  const canvas = document.getElementById('fire-canvas');
+  const ctx = canvas.getContext('2d');
+  const stage = canvas.parentElement;
+
+  function resize() {
+    canvas.width  = stage.offsetWidth;
+    canvas.height = stage.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const particles = [];
+  let frame = 0;
+
+  function spawnFire(cx, cy, dir) {
+    for (let k = 0; k < 3; k++) {
+      const angle = dir + (Math.random() - 0.5) * 0.7;
+      const speed = 2.5 + Math.random() * 3;
+      particles.push({
+        x: cx + (Math.random()-0.5)*12,
+        y: cy + (Math.random()-0.5)*12,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1, decay: 0.022 + Math.random() * 0.018,
+        size: 10 + Math.random() * 14,
+        hue: 10 + Math.random() * 40
+      });
+    }
+  }
+
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    frame++;
+
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    const mouthX = cx + 78;
+    const mouthY = cy + 8;
+
+    if (frame % 2 === 0) spawnFire(mouthX, mouthY, 0);
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy -= 0.06;
+      p.vx *= 0.97;
+      p.life -= p.decay;
+      p.size *= 0.96;
+      if (p.life <= 0) { particles.splice(i, 1); continue; }
+
+      const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
+      grad.addColorStop(0,   `hsla(${p.hue+20},100%,90%,${p.life})`);
+      grad.addColorStop(0.4, `hsla(${p.hue},100%,60%,${p.life*0.8})`);
+      grad.addColorStop(1,   `hsla(${p.hue-20},90%,30%,0)`);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+    }
+
+    const wingSwing = Math.sin(frame * 0.07) * 12;
+    const wX = cx - 80;
+    const wY = cy - 20;
+    ctx.save();
+    ctx.globalAlpha = 0.55;
+    ctx.fillStyle = 'rgba(200,30,0,0.6)';
+    ctx.beginPath();
+    ctx.moveTo(wX, wY);
+    ctx.lineTo(wX - 40, wY - 30 - wingSwing);
+    ctx.lineTo(wX - 70, wY - 10 - wingSwing*0.5);
+    ctx.lineTo(wX - 55, wY + 15);
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.restore();
+
+    const wX2 = cx - 75;
+    const wY2 = cy + 20;
+    ctx.save();
+    ctx.globalAlpha = 0.45;
+    ctx.fillStyle = 'rgba(180,20,0,0.5)';
+    ctx.beginPath();
+    ctx.moveTo(wX2, wY2);
+    ctx.lineTo(wX2 - 35, wY2 + 25 + wingSwing*0.6);
+    ctx.lineTo(wX2 - 60, wY2 + 10 + wingSwing*0.3);
+    ctx.lineTo(wX2 - 40, wY2 - 10);
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.restore();
+
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+(function() {
+  const canvas = document.getElementById('dragon-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const particles = [];
+  const MAX_PARTICLES = 120;
+
+  function spawnFire(x, y, vx, vy, life, size, hue) {
+    particles.push({ x, y, vx, vy, life, maxLife: life, size, hue });
+  }
+
+  let t = 0;
+  let breathPhase = 0;
+  let breathTimer = 0;
+  let isBrething = false;
+  let breathCooldown = 0;
+
+  function drawDragon(x, y, scale, flip) {
+    ctx.save();
+    ctx.translate(x, y);
+    if (flip) ctx.scale(-1, 1);
+    ctx.scale(scale, scale);
+
+    const bodyWave = Math.sin(t * 0.04) * 6;
+    const wingFlap = Math.sin(t * 0.08) * 18;
+
+    ctx.shadowBlur = 30;
+    ctx.shadowColor = '#ff6600';
+
+    ctx.strokeStyle = '#cc3300';
+    ctx.lineWidth = 3;
+    ctx.fillStyle = '#8B0000';
+
+    ctx.beginPath();
+    ctx.ellipse(0, bodyWave, 55, 28, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.ellipse(-45, bodyWave - 8, 30, 18, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.ellipse(55, bodyWave - 10, 20, 14, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.save();
+    ctx.translate(-45, bodyWave - 8);
+    ctx.rotate(-0.3);
+    ctx.beginPath();
+    ctx.moveTo(30, 0);
+    ctx.lineTo(55, -10);
+    ctx.lineTo(65, -5);
+    ctx.lineTo(55, 5);
+    ctx.lineTo(30, 0);
+    ctx.fillStyle = '#aa2200';
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(0, bodyWave);
+    ctx.fillStyle = 'rgba(180,0,0,0.7)';
+    ctx.strokeStyle = '#cc3300';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-10, -28);
+    ctx.lineTo(-30, -28 - wingFlap);
+    ctx.lineTo(-60, -20 - wingFlap * 0.5);
+    ctx.lineTo(-80, -10 - wingFlap * 0.3);
+    ctx.lineTo(-60, -0);
+    ctx.lineTo(-20, -10);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(-65, bodyWave - 14);
+    ctx.fillStyle = '#550000';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 10, 7, -0.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ff4400';
+    ctx.beginPath();
+    ctx.arc(-3, -1, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    ctx.fillStyle = '#cc3300';
+    for (let i = 0; i < 4; i++) {
+      ctx.beginPath();
+      ctx.ellipse(-10 + i * 14, bodyWave + 24, 6, 14, 0.1, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.restore();
+    return { mouthX: x + (flip ? -85 : 85) * scale, mouthY: y + (bodyWave - 8) * scale };
+  }
+
+  function updateParticles() {
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x  += p.vx;
+      p.y  += p.vy;
+      p.vy -= 0.08;
+      p.vx *= 0.98;
+      p.life--;
+      p.size *= 0.97;
+      if (p.life <= 0 || p.size < 0.5) particles.splice(i, 1);
+    }
+  }
+
+  function drawParticles() {
+    for (const p of particles) {
+      const alpha = p.life / p.maxLife;
+      const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
+      grad.addColorStop(0,   `hsla(${p.hue + 20}, 100%, 80%, ${alpha})`);
+      grad.addColorStop(0.4, `hsla(${p.hue},      100%, 60%, ${alpha * 0.8})`);
+      grad.addColorStop(1,   `hsla(${p.hue - 20}, 90%,  30%, 0)`);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+    }
+  }
+
+  const DRAGON_SCALE = Math.min(W, 900) / 900 * 1.2;
+
+  function animate() {
+    ctx.clearRect(0, 0, W, H);
+    t++;
+    breathTimer++;
+
+    if (!isBrething && breathCooldown <= 0 && breathTimer % 80 === 0) {
+      isBrething = true; breathPhase = 0; breathCooldown = 160;
+    }
+    if (breathCooldown > 0) breathCooldown--;
+
+    const sc = Math.min(W, 900) / 900 * 1.2;
+    const dragonX = W * 0.20;
+    const dragonY = H * 0.62;
+
+    const { mouthX, mouthY } = drawDragon(dragonX, dragonY, sc, false);
+
+    if (isBrething && particles.length < MAX_PARTICLES) {
+      breathPhase++;
+      for (let k = 0; k < 5; k++) {
+        const spread = (Math.random() - 0.5) * 1.4;
+        const speed  = 3 + Math.random() * 4;
+        const hue    = 10 + Math.random() * 40;
+        spawnFire(
+          mouthX + (Math.random() - 0.5) * 10,
+          mouthY + (Math.random() - 0.5) * 10,
+          speed + (Math.random() - 0.5),
+          spread - 0.5,
+          28 + Math.random() * 20,
+          14 + Math.random() * 18,
+          hue
+        );
+      }
+      if (breathPhase > 50) { isBrething = false; }
+    }
+
+    updateParticles();
+    drawParticles();
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+})();
+</script>
+
+</body>
+</html>

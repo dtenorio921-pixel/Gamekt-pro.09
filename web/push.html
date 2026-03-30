@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gamekt pro — Enviar para GitHub</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0d0f14;
+      color: #e4e8f0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #161a23;
+      border: 2px solid #ff4400;
+      border-radius: 18px;
+      padding: 32px 28px;
+      max-width: 500px;
+      width: 100%;
+    }
+    h1 { font-size: 1.4rem; color: #ff6622; margin-bottom: 8px; }
+    .sub { font-size: 0.85rem; color: #8a91a8; margin-bottom: 24px; line-height: 1.6; }
+    label { font-size: 0.82rem; color: #8a91a8; display: block; margin-bottom: 6px; }
+    input {
+      width: 100%;
+      background: #0a0d14;
+      border: 1px solid #2a3045;
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: #66ccff;
+      font-family: monospace;
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+      outline: none;
+    }
+    input:focus { border-color: #ff4400; }
+    .hint {
+      background: rgba(247,201,72,0.08);
+      border: 1px solid rgba(247,201,72,0.3);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.8rem;
+      color: #f7c948;
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+    .hint a { color: #4f8ef7; }
+    .btn {
+      width: 100%;
+      background: linear-gradient(135deg, #ff4400, #ff8800);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 15px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    #status {
+      margin-top: 20px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      display: none;
+    }
+    #status.info    { background: rgba(79,142,247,0.1); border: 1px solid #4f8ef7; color: #99ccff; }
+    #status.success { background: rgba(62,207,142,0.1); border: 1px solid #3ecf8e; color: #3ecf8e; }
+    #status.error   { background: rgba(247,92,92,0.1);  border: 1px solid #f75c5c; color: #f75c5c; }
+    #status a { color: #f7c948; font-weight: 700; }
+    .step { margin-bottom: 6px; }
+    .back { display: block; text-align: center; margin-top: 20px; color: #8a91a8; font-size: 0.82rem; text-decoration: none; }
+    .back:hover { color: #e4e8f0; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>🚀 Enviar Gamekt pro para o GitHub</h1>
+  <p class="sub">Cole o seu Token do GitHub abaixo e clique no botão. O sistema vai criar um repositório novo na sua conta e enviar o código automaticamente.</p>
+
+  <div class="hint">
+    <strong>Como criar o Token (30 segundos):</strong><br>
+    1. Acesse: <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a><br>
+    2. Em <strong>Note</strong> escreva: <code>gamekt</code><br>
+    3. Em <strong>Expiration</strong> escolha: <strong>30 days</strong><br>
+    4. Marque a caixinha: <strong>✅ repo</strong> (primeira da lista)<br>
+    5. Role até o fim e clique: <strong>Generate token</strong><br>
+    6. Copie o token (começa com <code>ghp_</code>) e cole abaixo
+  </div>
+
+  <label>Seu Token do GitHub:</label>
+  <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off"/>
+
+  <label>Nome do repositório (pode mudar):</label>
+  <input type="text" id="reponame" value="gamekt-pro" placeholder="gamekt-pro"/>
+
+  <button class="btn" id="pushbtn" onclick="startPush()">⬆️ Criar Repositório e Enviar Código</button>
+
+  <div id="status"></div>
+</div>
+<a class="back" href="/">← Voltar ao painel</a>
+
+<script>
+async function startPush() {
+  const token = document.getElementById('token').value.trim();
+  const repo  = document.getElementById('reponame').value.trim();
+  const btn   = document.getElementById('pushbtn');
+  const st    = document.getElementById('status');
+
+  if (!token || !token.startsWith('ghp_') && !token.startsWith('github_pat_')) {
+    showStatus('error', '⚠️ Token inválido. Ele deve começar com <code>ghp_</code>. Siga as instruções acima para gerar um novo token.');
+    return;
+  }
+  if (!repo) { showStatus('error', '⚠️ Coloque um nome para o repositório.'); return; }
+
+  btn.disabled = true;
+  showStatus('info', '<div class="step">⏳ Verificando sua conta GitHub...</div>');
+
+  try {
+    const res = await fetch('/api/push-to-github', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, repo })
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      showStatus('success',
+        `✅ <strong>Repositório criado e código enviado com sucesso!</strong><br><br>` +
+        `Agora siga estes passos:<br><br>` +
+        `1. Acesse: <a href="${data.actionsUrl}" target="_blank">${data.actionsUrl}</a><br>` +
+        `2. Clique em <strong>"Build Gamekt pro APK"</strong><br>` +
+        `3. Clique em <strong>"Run workflow"</strong> → <strong>"Run workflow"</strong> (verde)<br>` +
+        `4. Aguarde ~15 minutos<br>` +
+        `5. Clique no build ✅ → seção <strong>Artifacts</strong> → baixe <strong>Gamekt-pro-debug</strong>`
+      );
+    } else {
+      showStatus('error', `❌ Erro: ${data.error}`);
+      btn.disabled = false;
+    }
+  } catch(e) {
+    showStatus('error', '❌ Erro de conexão. Tente novamente.');
+    btn.disabled = false;
+  }
+}
+
+function showStatus(type, html) {
+  const st = document.getElementById('status');
+  st.className = type;
+  st.innerHTML = html;
+  st.style.display = 'block';
+}
+</script>
+</body>
+</html>
